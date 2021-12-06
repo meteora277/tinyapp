@@ -20,7 +20,8 @@ app.get('/urls.json', (req ,res) => {
   res.json(urlDatabase);
 });
 app.get('/hello', (req, res) => {
-  res.send('<html><body>Hello <strong>World</strong></body></html>');
+  const templateVars = {greeting: 'Hello World!'};
+  res.render('hello_world', templateVars);
 });
 
 app.listen(PORT, () => {
