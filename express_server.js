@@ -24,10 +24,6 @@ app.get('/urls', (req, res) => {
 app.get('/urls.json', (req ,res) => {
   res.json(urlDatabase);
 });
-app.get('/hello', (req, res) => {
-  const templateVars = {greeting: 'Hello World!'};
-  res.render('hello_world', templateVars);
-});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
