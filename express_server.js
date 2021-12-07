@@ -67,13 +67,14 @@ app.get('/u/:shortURL', (req, res) => {
     res.redirect('/urls');
   }
   res.redirect(longURL);
- 
+   
 });
 //if post request is valid, it will add to database and then redirect to the link passed into database
 //it will also check if link start with http:// becuase redirect doesn't seem to work without it.
 app.post('/urls', (req, res) => {
 
   let key = generateRandomString();
+  console.log('uwu')
   if (req.body.longURL.slice(0,7) !== 'http://') {
     urlDatabase[key] = 'http://' + req.body.longURL;
   } else {
@@ -82,6 +83,14 @@ app.post('/urls', (req, res) => {
   res.redirect(`/u/${key}`);
 });
 
+//will extract url from :shortURL and then delete it from db
+app.post('/urls/:shortURL/delete', (req, res) =>{
+
+  let shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  console.log(urlDatabase, shortURL);
+  res.redirect('/urls');
+});
 
 
 app.listen(PORT, () => {
