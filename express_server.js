@@ -23,7 +23,6 @@ const generateRandomString = () => {
   }
   return numberArray.join('');
 };
-console.log(generateRandomString());
 
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
@@ -52,10 +51,19 @@ app.get('/urls', (req, res) => {
 app.get('/urls.json', (req ,res) => {
   res.json(urlDatabase);
 });
+app.get('/u/:shortURL', (req, res) => {
+  let longURL = urlDatabase[req.params.shortURL];
+  if (longURL === undefined) {
+    res.redirect('/urls');
+  };
+  res.redirect(longURL);
+ 
+});
 app.post('/urls', (req, res) => {
   console.log(req.body);
   res.send('OK');
 });
+
 
 
 app.listen(PORT, () => {
