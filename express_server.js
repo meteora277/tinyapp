@@ -74,7 +74,7 @@ app.get('/u/:shortURL', (req, res) => {
 app.post('/urls', (req, res) => {
 
   let key = generateRandomString();
-  console.log('uwu')
+  console.log('uwu');
   if (req.body.longURL.slice(0,7) !== 'http://') {
     urlDatabase[key] = 'http://' + req.body.longURL;
   } else {
@@ -85,13 +85,20 @@ app.post('/urls', (req, res) => {
 
 //will extract url from :shortURL and then delete it from db
 app.post('/urls/:shortURL/delete', (req, res) =>{
-
   let shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
   console.log(urlDatabase, shortURL);
   res.redirect('/urls');
-});
 
+});
+//will update key in the db based on post wildcard
+app.post('/urls/:shortURL/update', (req, res) => {
+  let shortUrl = req.params.shortURL;
+  let updatedURL = req.body.longURL;
+  urlDatabase[shortUrl] = updatedURL;
+  res.redirect('/urls');
+
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
