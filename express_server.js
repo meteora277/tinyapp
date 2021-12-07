@@ -33,17 +33,25 @@ const urlDatabase = {
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.set('view engine', 'ejs');
+
+//home page redirect to urls page
 app.get('/', (req, res) => {
-  res.send('Hello!');
+  res.redirect('/urls');
 });
+
+//renders page for creating a new key: value in the db
 app.get('/urls/new', (req, res) => {
   res.render('urls_new');
 });
+
+
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
   res.render('urls_show', templateVars);
 });
 
+
+//renders all the urls into a template
 app.get('/urls', (req, res) => {
   const templateVars = {urls: urlDatabase};
   res.render('urls_index', templateVars);
@@ -51,6 +59,8 @@ app.get('/urls', (req, res) => {
 app.get('/urls.json', (req ,res) => {
   res.json(urlDatabase);
 });
+
+// if shortUrl key is in the database it will redirect, else return to /urls page
 app.get('/u/:shortURL', (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
   if (longURL === undefined) {
@@ -59,10 +69,12 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longURL);
  
 });
+//if post request is valid, it will add to database and then redirect to the link passed into database
 app.post('/urls', (req, res) => {
   console.log(req.body);
   let key = generateRandomString();
   urlDatabase[key] = req.body.longURL;
+
   res.redirect(`/u/${key}`);
 });
 
