@@ -55,13 +55,16 @@ app.get('/u/:shortURL', (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
   if (longURL === undefined) {
     res.redirect('/urls');
-  };
+  }
   res.redirect(longURL);
  
 });
 app.post('/urls', (req, res) => {
   console.log(req.body);
-  res.send('OK');
+  let key = generateRandomString();
+  urlDatabase[key] = req.body.longURL;
+  let longURL = urlDatabase[key];
+  res.redirect(longURL);
 });
 
 
