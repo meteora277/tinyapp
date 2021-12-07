@@ -1,4 +1,5 @@
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const express = require('express');
 
 
@@ -31,6 +32,7 @@ const urlDatabase = {
 
 //body parser will parse the buffer recieved when a user POSTs into an object available with req.body
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 app.set('view engine', 'ejs');
 
