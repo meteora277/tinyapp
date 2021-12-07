@@ -12,7 +12,7 @@ const generateRandomString = () => {
 
   //helper function to run 6 times to get a 6 random character string
   let randomNumFromString = (string) => {
-    let randomIndex = Math.floor(Math.random(string.length - 1));
+    let randomIndex = Math.floor(Math.random * (string.length - 1));
     return string[randomIndex];
   };
 
