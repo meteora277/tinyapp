@@ -1,14 +1,37 @@
+const bodyParser = require('body-parser');
 const express = require('express');
+
+
 const app = express();
 const PORT = 8080;
+
+const generateRandomString = () => {
+  let numberArray = [];
+  //function set up so if the available keys change, function will still work
+  let availableChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890';
+
+  //helper function to run 6 times to get a 6 random character string
+  let randomNumFromString = (string) => {
+    let randomIndex = Math.floor(Math.random(string.length - 1));
+    return string[randomIndex];
+  };
+
+  let i = 0;
+  while (i < 6) {
+    numberArray.push(randomNumFromString(availableChars));
+    i++;
+  }
+  return numberArray.join('');
+};
+console.log(generateRandomString());
 
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9sm5xK': 'http://www.google.com'
 };
+app.use(bodyParser.urlencoded({extended: true}));
 
 app.set('view engine', 'ejs');
-
 app.get('/', (req, res) => {
   res.send('Hello!');
 });
@@ -26,6 +49,10 @@ app.get('/urls', (req, res) => {
 });
 app.get('/urls.json', (req ,res) => {
   res.json(urlDatabase);
+});
+app.post('/urls', (req, res) => {
+  console.log(req.body);
+  res.send('OK');
 });
 
 
