@@ -16,7 +16,7 @@
       </div>
       <div>
         <form method="POST" action="/urls/<%= shortURL %>/update">
-          <input type="text" value="<%= longURL %>"/>
+          <input type="text" value="<%= longURL %>" name="longURL"/>
           <button type="submit">Update</button>
         </form>
       </div>
