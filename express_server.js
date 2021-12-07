@@ -63,8 +63,7 @@ app.post('/urls', (req, res) => {
   console.log(req.body);
   let key = generateRandomString();
   urlDatabase[key] = req.body.longURL;
-  let longURL = urlDatabase[key];
-  res.redirect(longURL);
+  res.redirect(`/u/${key}`);
 });
 
 
