@@ -76,7 +76,6 @@ app.get('/u/:shortURL', (req, res) => {
 app.post('/urls', (req, res) => {
 
   let key = generateRandomString();
-  console.log('uwu');
   if (req.body.longURL.slice(0,7) !== 'http://') {
     urlDatabase[key] = 'http://' + req.body.longURL;
   } else {
@@ -89,7 +88,6 @@ app.post('/urls', (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) =>{
   let shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
-  console.log(urlDatabase, shortURL);
   res.redirect('/urls');
 
 });
@@ -104,7 +102,6 @@ app.post('/urls/:shortURL/update', (req, res) => {
 
 //yakes username out of form data and creates a cookie login information
 app.post('/login', (req, res) => {
-  console.log(req.body.username);
   res.cookie('username', req.body.username, { expires: new Date(Date.now() + 900000)});
   res.redirect('/urls');
 });
