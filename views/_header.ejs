@@ -1,32 +1,28 @@
 <header>
-  <nav class="navbar navbar-expand-md navbar-dark bg-success">
-    <a class="navbar-brand" href="/urls">TinyApp</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
-      aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-      <div class="navbar-nav">
-        <a class="nav-item nav-link" href="/urls">My URLs</a>
-        <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        <% if (user === undefined) {%>
-        <a class="nav-item nav-link" href="/register">Register</a>
-        <% } %>
-      </div>
-    </div>
-    <div>
-      <% if(user !== undefined){ %>
-        <form class="form-inline" method="POST" action="/logout">
-          <h6 style="padding-right: 0.5rem;">Logged in As: <%= user.email %> </h6>
-          <button type="submit" class="btn btn-outline-dark">Logout</button>
-        </form>
-        <% } else { %>
-          <form class="form-inline" action="/login" method="POST">
-            <input class="form-control" type="text" placeholder="Username" name="username" />
-            <button type="submit" class="btn btn-success">Login</button>
-          </form>
+  <div class="container-fluid" style="padding:0;">
+    <nav class="navbar navbar-expand-md navbar-dark bg-success">
+      <a class="navbar-brand" href="/urls">TinyApp</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+        aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+          <a class="nav-item nav-link" href="/urls">My URLs</a>
+          <a class="nav-item nav-link me-auto" href="/urls/new">Create New URL</a>
+          <% if (user === undefined) {%>
+            <a class="nav-item nav-link" href="/register">Register</a>
+            <a class="nav-item nav-link" href="/login">login</a>
+          <% } else { %>
+            <h6  class="nav-link light" style="padding-right: 0.5rem; color: rgba(255,255,255,.5); margin: 0;">Logged in As: <%= user.email %></h6>
+            <div class="ms-auto">
+              <form method="POST" action="/logout">
+                <button type="submit" class="btn btn-outline-dark">Logout</button>
+              </form>
+            </div>
           <% } %>
-    </div>
-
-  </nav>
+        </div>
+      </div>
+    </nav>
+  </div>
 </header>
