@@ -46,6 +46,13 @@ const isEmailInDB = (checkEmail) => {
   }
   return false;
 };
+const UserFromEmail = (email) => {
+  for (let user in users) {
+    if (users[user].email === email) {
+      return users[user];
+    }
+  }
+};
 
 //body parser will parse the buffer recieved when a user POSTs into an object available with req.body
 app.use(bodyParser.urlencoded({extended: true}));
@@ -138,15 +145,26 @@ app.post('/urls/:shortURL/update', (req, res) => {
 
 });
 
-//yakes username out of form data and creates a cookie login information
+//takes email and password out of form data compares it to db
+//if there is no email in db or the password is incorrect it will retrun a 400 error
 app.post('/login', (req, res) => {
-
-  let candidateEmail = req.body.email;
-  let candidatePassword = req.body.password;
-  let hash = createHash('sha256').update(candidatePassword).digest('binary');
-
   
+  let candidateEmail = req.body.email.toLowerCase();
+  let candidatePassword = req.body.password;
+  let user = UserFromEmail(candidateEmail);
+  let hash = createHash('sha256').update(salt + candidatePassword).digest('binary');
+  
+  if (user) {
+    let password = user.password;
+    let email = user.email;
+    if (email === candidateEmail && password === hash) {
 
+      res.cookie('user_id', user.id , {expires: new Date(Date.now() + 900000)});
+      res.redirect('/urls');
+    }
+    res.status(400).send('Incorrect Password');
+  }
+  res.status(400).send('There is no account registered to this email');
 });
 
 
