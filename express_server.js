@@ -43,19 +43,19 @@ app.get('/', (req, res) => {
 
 //renders page for creating a new key: value in the db
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
+  const templateVars = {username: req.cookies["username"]};
+  
+  res.render('urls_new', templateVars);
 });
 
-
 app.get('/urls/:shortURL', (req, res) => {
-  const templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"]};
   res.render('urls_show', templateVars);
 });
 
-
 //renders all the urls into a template
 app.get('/urls', (req, res) => {
-  const templateVars = {urls: urlDatabase};
+  const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
   res.render('urls_index', templateVars);
 });
 app.get('/urls.json', (req ,res) => {
@@ -100,6 +100,13 @@ app.post('/urls/:shortURL/update', (req, res) => {
   urlDatabase[shortUrl] = updatedURL;
   res.redirect('/urls');
 
+});
+
+//yakes username out of form data and creates a cookie login information
+app.post('/login', (req, res) => {
+  console.log(req.body.username);
+  res.cookie('username', req.body.username, { expires: new Date(Date.now() + 900000)});
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {
