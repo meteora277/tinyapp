@@ -108,7 +108,11 @@ app.post('/login', (req, res) => {
   res.cookie('username', req.body.username, { expires: new Date(Date.now() + 900000)});
   res.redirect('/urls');
 });
-
+//clears cookies when user presses logout button
+app.post('/logout', (req, res) =>{
+  res.clearCookie('username');
+  res.redirect('/urls')
+});
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
 });
