@@ -5,7 +5,21 @@ const { createHash } = require('crypto');
 
 const app = express();
 const PORT = 8080;
+const salt = "IamSalt";
 
+
+
+const urlDatabase = {
+  'b2xVn2': 'http://www.lighthouselabs.ca',
+  '9sm5xK': 'http://www.google.com'
+};
+const users = {
+  "uwuowo": {
+    id: "uwuowo",
+    email:'justin.s.diaz@gmail.com',
+    password: '!"Öõ£$\x00ÕÄ¼\t\n»½H&\x996.Cü\x91\x194[\x07\x00Ï\x17\x84\x1C\x1C'
+  }
+};
 const generateRandomString = () => {
   let numberArray = [];
   //function set up so if the available keys change, function will still work
@@ -24,12 +38,14 @@ const generateRandomString = () => {
   }
   return numberArray.join('');
 };
-
-const urlDatabase = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+const isEmailInDB = (checkEmail) => {
+  for (let user in users) {
+    if (users[user].email === checkEmail) {
+      return true;
+    }
+  }
+  return false;
 };
-const users = {};
 
 //body parser will parse the buffer recieved when a user POSTs into an object available with req.body
 app.use(bodyParser.urlencoded({extended: true}));
@@ -129,17 +145,35 @@ app.post('/logout', (req, res) =>{
 
 
 //grabs form info from /register and add a new user to the users db
+
 app.post('/register', (req, res) => {
-  const salt = "IamSalt";
-  const hash = createHash('sha256').update(salt + req.body.password).digest('binary');
+
+  //lowercased for consistant matching with db
+  const email = req.body.email.toLowerCase();
+  const password = req.body.password;
+
+  if (email === "" || password === "") {
+    
+    res.status(400).send('Fields cannot be left empty');
+    return;
+  }
+  if (isEmailInDB(email) === true) {
+
+    res.status(400).send('An account has already been register under this email.');
+    return;
+  }
+  
+  const hash = createHash('sha256').update(salt + password).digest('binary');
+  
   const id = generateRandomString();
-  const email = req.body.email;
   let newUser =  {
     "id": id,
     email: email,
     password: hash
   };
+  
   users[id] = newUser;
+  console.log(users)
   res.cookie('user_id', id, {expires: new Date(Date.now() + 900000)});
   res.redirect('/urls');
 });
