@@ -1,7 +1,7 @@
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const express = require('express');
-
+const { createHash } = require('crypto');
 
 const app = express();
 const PORT = 8080;
@@ -29,6 +29,7 @@ const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9sm5xK': 'http://www.google.com'
 };
+const users = {};
 
 //body parser will parse the buffer recieved when a user POSTs into an object available with req.body
 app.use(bodyParser.urlencoded({extended: true}));
@@ -115,8 +116,28 @@ app.post('/login', (req, res) => {
 //clears cookies when user presses logout button
 app.post('/logout', (req, res) =>{
   res.clearCookie('username');
-  res.redirect('/urls')
+  res.redirect('/urls');
 });
+//grabs form info from /register and add a new user to the users db
+app.post('/register', (req, res) => {
+  console.log(req.body);
+  const salt = "IamSalt";
+  const hash = createHash('sha256').update(salt + req.body.password).digest('binary');
+  const id = generateRandomString();
+  const email = req.body.email;
+  let newUser =  {
+    "id": id,
+    email: email,
+    password: hash
+  };
+  users[id] = newUser;
+  console.log(users)
+  
+
+  res.redirect('/urls');
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
 });
+//î³nrn?þÁm§y»NSø¥¾'oÌ?Æê
