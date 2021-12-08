@@ -100,6 +100,14 @@ app.get('/register', (req, res) => {
 
 });
 
+//request to login will check if there is a cookie, and redirect you if so
+app.get('/login', (req, res) => {
+  const user = users[req.cookies["user_id"]] || undefined;
+  const templateVars = {user: user};
+  res.render('urls_login', templateVars);
+
+});
+
 //if post request is valid, it will add to database and then redirect to the link passed into database
 //it will also check if link start with http:// becuase redirect doesn't seem to work without it.
 app.post('/urls', (req, res) => {
@@ -132,8 +140,13 @@ app.post('/urls/:shortURL/update', (req, res) => {
 
 //yakes username out of form data and creates a cookie login information
 app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username, { expires: new Date(Date.now() + 900000)});
-  res.redirect('/urls');
+
+  let candidateEmail = req.body.email;
+  let candidatePassword = req.body.password;
+  let hash = createHash('sha256').update(candidatePassword).digest('binary');
+
+  
+
 });
 
 
@@ -173,7 +186,7 @@ app.post('/register', (req, res) => {
   };
   
   users[id] = newUser;
-  console.log(users)
+  console.log(users);
   res.cookie('user_id', id, {expires: new Date(Date.now() + 900000)});
   res.redirect('/urls');
 });
@@ -181,4 +194,3 @@ app.post('/register', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
 });
-//î³nrn?þÁm§y»NSø¥¾'oÌ?Æê
