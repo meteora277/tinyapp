@@ -9,13 +9,15 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <% if (user === undefined) {%>
         <a class="nav-item nav-link" href="/register">Register</a>
+        <% } %>
       </div>
     </div>
     <div>
       <% if(user !== undefined){ %>
         <form class="form-inline" method="POST" action="/logout">
-          <h5 style="padding-right: 0.5rem;">Logged in As: <%= user.email %> </h5>
+          <h6 style="padding-right: 0.5rem;">Logged in As: <%= user.email %> </h6>
           <button type="submit" class="btn btn-outline-dark">Logout</button>
         </form>
         <% } else { %>
