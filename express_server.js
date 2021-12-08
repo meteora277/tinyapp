@@ -131,9 +131,7 @@ app.post('/register', (req, res) => {
     password: hash
   };
   users[id] = newUser;
-  console.log(users)
-  
-
+  res.cookie('user_id', id, {expires: new Date(Date.now() + 900000)});
   res.redirect('/urls');
 });
 
