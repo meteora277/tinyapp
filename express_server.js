@@ -71,6 +71,13 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longURL);
    
 });
+app.get('/register', (req, res) => {
+
+  let templateVars = {username: req.cookies["username"]};
+  res.render('urls_register', templateVars);
+
+});
+
 //if post request is valid, it will add to database and then redirect to the link passed into database
 //it will also check if link start with http:// becuase redirect doesn't seem to work without it.
 app.post('/urls', (req, res) => {
