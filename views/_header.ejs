@@ -13,9 +13,9 @@
       </div>
     </div>
     <div>
-      <% if(username){ %>
+      <% if(user !== undefined){ %>
         <form class="form-inline" method="POST" action="/logout">
-          <h5 style="padding-right: 0.5rem;">Logged in As: <%= username %> </h5>
+          <h5 style="padding-right: 0.5rem;">Logged in As: <%= user.email %> </h5>
           <button type="submit" class="btn btn-outline-dark">Logout</button>
         </form>
         <% } else { %>
