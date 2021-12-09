@@ -103,6 +103,7 @@ app.get('/urls/new', (req, res) => {
 
   const user = req.currentUser;
 
+  //conditionally renders the new page only if user is logged in, else redirects them to the login page
   if (user) {
     const templateVars = {user: user};
     res.render('urls_new', templateVars);
@@ -113,13 +114,13 @@ app.get('/urls/new', (req, res) => {
   return;
 });
 
-//***
+//reads url ket from params and gets the associated long url from the database
 app.get('/urls/:shortURL', (req, res) => {
 
   const shortURL = req.params.shortURL;
   const userId = req.currentUser.id;
-  //if url they are specifying doesn't match an item in db it will throw an error
 
+  //if url they are specifying doesn't match an item in db it will throw an error
   if (urlDatabase[shortURL] === undefined) {
     res.status(404).send("this page doesn't exist");
     return;
@@ -158,15 +159,23 @@ app.get('/u/:shortURL', (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
   if (longURL === undefined) {
     res.redirect('/urls');
+    return;
   }
   res.redirect(longURL);
+  return;
    
 });
+
+//send back register page, if user is logged in already it will redirect to the /urls page
 app.get('/register', (req, res) => {
-  const user = users[req.session.user_id];
+  const user = req.currentUser || undefined;
+  if (user) {
+    res.redirect('/urls');
+    return;
+  }
   const templateVars = {user: user};
   res.render('urls_register', templateVars);
-
+  return;
 });
 
 //request to login will check if there is a cookie, and redirect you if so
