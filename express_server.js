@@ -102,9 +102,20 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.get('/urls/:shortURL', (req, res) => {
+
+  let shortURL = req.params.shortURL;
   const user = users[req.cookies["user_id"]];
+
+
+  //if url they are specifying doesn't match an item in db it will throw an error
+  if (urlDatabase[shortURL] === undefined) {
+    res.status(404).send("this page doesn't exist");
+  }
+  if (urlDatabase[shortURL].userID !== user) {
+    res.status(401).send("You do not have access to this page");
+  }
   
-  const templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: user};
+  const templateVars = {shortURL: shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: user};
   res.render('urls_show', templateVars);
 });
 
@@ -154,6 +165,8 @@ app.get('/login', (req, res) => {
 //it will also check if link s tart with http:// because redirect doesn't seem to work without it.
 //user cannot post to this url if they are not logged in
 app.post('/urls', (req, res) => {
+
+
   const user = users[req.cookies["user_id"]];
   if (user) {
 
@@ -177,10 +190,18 @@ app.post('/urls', (req, res) => {
 
 //will extract url from :shortURL and then delete it from db
 app.post('/urls/:shortURL/delete', (req, res) =>{
+  
   let shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
+  const url = urlDatabase[shortURL];
+
+  if (req.cookies['user_id'] === url.userID) {
+ 
+    delete urlDatabase[shortURL];
+  }
+  console.log(urlDatabase);
   res.redirect('/urls');
 
+  return;
 });
 
 //will update key in the db based on post wildcard
