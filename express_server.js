@@ -10,8 +10,22 @@ const salt = "IamSalt";
 
 
 const urlDatabase = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+  'b2xVn2': {
+    longURL: 'http://lighthouselabs.com',
+    userID: 'uwuowo'
+  },
+  '9sm5xK': {
+    longURL: 'https://www.google.com',
+    userID: 'uwuowo'
+  },
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "uwuowo"
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "uwuowo"
+}
 };
 const users = {
   "uwuowo": {
@@ -66,18 +80,21 @@ app.get('/', (req, res) => {
 });
 
 //renders page for creating a new key: value in the db
+//user will be redirected if they are not logged in
 app.get('/urls/new', (req, res) => {
 
   const user = users[req.cookies["user_id"]];
-  const templateVars = {user: user};
-  res.render('urls_new', templateVars);
-
+  if (user) {
+    const templateVars = {user: user};
+    res.render('urls_new', templateVars);
+  }
+  res.redirect('/login');
 });
 
 app.get('/urls/:shortURL', (req, res) => {
   const user = users[req.cookies["user_id"]];
   
-  const templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: user};
+  const templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: user};
   res.render('urls_show', templateVars);
 });
 
@@ -93,7 +110,7 @@ app.get('/urls.json', (req ,res) => {
 
 // if shortUrl key is in the database it will redirect, else return to /urls page
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   if (longURL === undefined) {
     res.redirect('/urls');
   }
@@ -116,16 +133,23 @@ app.get('/login', (req, res) => {
 });
 
 //if post request is valid, it will add to database and then redirect to the link passed into database
-//it will also check if link start with http:// becuase redirect doesn't seem to work without it.
+//it will also check if link s tart with http:// because redirect doesn't seem to work without it.
+//user cannot post to this url if they are not logged in
 app.post('/urls', (req, res) => {
+  const user = users[req.cookies["user_id"]];
+  if (user) { 
 
-  const key = generateRandomString();
-  if (req.body.longURL.slice(0,7) !== 'http://') {
-    urlDatabase[key] = 'http://' + req.body.longURL;
-  } else {
-    urlDatabase[key] = req.body.longURL;
+    const key = generateRandomString();
+    urlDatabase[key] = {};
+    if (req.body.longURL.slice(0,7) !== 'http://') {
+      urlDatabase[key].longURL = 'http://' + req.body.longURL;
+    } else {
+      urlDatabase[key].longURL = req.body.longURL;
+    }
+    urlDatabase[key].userID = key;
+    res.redirect(`/u/${key}`);
   }
-  res.redirect(`/u/${key}`);
+  res.status(400).send('you must be logged in to send post requests');
 });
 
 //will extract url from :shortURL and then delete it from db
@@ -161,10 +185,13 @@ app.post('/login', (req, res) => {
 
       res.cookie('user_id', user.id , {expires: new Date(Date.now() + 900000)});
       res.redirect('/urls');
+      return;
     }
     res.status(400).send('Incorrect Password');
+    return;
   }
   res.status(400).send('There is no account registered to this email');
+  return;
 });
 
 
@@ -176,7 +203,7 @@ app.post('/logout', (req, res) =>{
 
 
 //grabs form info from /register and add a new user to the users db
-
+//sends user off with a cookie containing login info
 app.post('/register', (req, res) => {
 
   //lowercased for consistant matching with db
@@ -184,19 +211,17 @@ app.post('/register', (req, res) => {
   const password = req.body.password;
 
   if (email === "" || password === "") {
-    
     res.status(400).send('Fields cannot be left empty');
     return;
   }
   if (isEmailInDB(email) === true) {
-
     res.status(400).send('An account has already been register under this email.');
     return;
   }
   
   const hash = createHash('sha256').update(salt + password).digest('binary');
-  
   const id = generateRandomString();
+
   let newUser =  {
     "id": id,
     email: email,
@@ -204,7 +229,6 @@ app.post('/register', (req, res) => {
   };
   
   users[id] = newUser;
-  console.log(users);
   res.cookie('user_id', id, {expires: new Date(Date.now() + 900000)});
   res.redirect('/urls');
 });
