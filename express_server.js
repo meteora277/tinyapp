@@ -22,8 +22,8 @@ const urlDatabase = {
   },
   'i3BoGr': {
     longURL: "https://www.google.ca",
-    userID: "uwuowo"
-}
+    userID: "owoowo"
+  }
 };
 const users = {
   "uwuowo": {
@@ -32,6 +32,7 @@ const users = {
     password: '!"Öõ£$\x00ÕÄ¼\t\n»½H&\x996.Cü\x91\x194[\x07\x00Ï\x17\x84\x1C\x1C'
   }
 };
+console.log(urlDatabase);
 const generateRandomString = () => {
   let numberArray = [];
   //function set up so if the available keys change, function will still work
@@ -65,7 +66,7 @@ const UserFromEmail = (email) => {
     }
   }
 };
-const filterURLsById = function(userId) {
+const urlsForUser = function(userId) {
   const filteredUrls = {};
 
   for (let url in urlDatabase) {
@@ -75,7 +76,6 @@ const filterURLsById = function(userId) {
   }
   return filteredUrls;
 };
-console.log(filterURLsById("uwuowo"));
 
 //body parser will parse the buffer recieved when a user POSTs into an object available with req.body
 app.use(bodyParser.urlencoded({extended: true}));
@@ -96,6 +96,7 @@ app.get('/urls/new', (req, res) => {
   if (user) {
     const templateVars = {user: user};
     res.render('urls_new', templateVars);
+    return;
   }
   res.redirect('/login');
 });
@@ -109,10 +110,18 @@ app.get('/urls/:shortURL', (req, res) => {
 
 //renders all the urls into a template
 app.get('/urls', (req, res) => {
+
   const user = users[req.cookies["user_id"]] || undefined;
-  const templateVars = {urls: urlDatabase, user: user};
+  let filteredUserUrls = undefined;
+
+  if (user) {
+    filteredUserUrls = urlsForUser(user.id);
+  }
+  
+  const templateVars = {urls: filteredUserUrls , user: user};
   res.render('urls_index', templateVars);
 });
+
 app.get('/urls.json', (req ,res) => {
   res.json(urlDatabase);
 });
@@ -146,17 +155,22 @@ app.get('/login', (req, res) => {
 //user cannot post to this url if they are not logged in
 app.post('/urls', (req, res) => {
   const user = users[req.cookies["user_id"]];
-  if (user) { 
+  if (user) {
 
     const key = generateRandomString();
     urlDatabase[key] = {};
+
     if (req.body.longURL.slice(0,7) !== 'http://') {
       urlDatabase[key].longURL = 'http://' + req.body.longURL;
+      urlDatabase[key].userID = req.cookies["user_id"];
     } else {
       urlDatabase[key].longURL = req.body.longURL;
+      urlDatabase[key].userID = req.cookies["user_id"];
     }
-    urlDatabase[key].userID = key;
+    console.log(urlDatabase);
+    console.log(urlsForUser(req.cookies['user_id']));
     res.redirect(`/u/${key}`);
+    return;
   }
   res.status(400).send('you must be logged in to send post requests');
 });
@@ -171,9 +185,12 @@ app.post('/urls/:shortURL/delete', (req, res) =>{
 
 //will update key in the db based on post wildcard
 app.post('/urls/:shortURL/update', (req, res) => {
-  let shortUrl = req.params.shortURL;
-  let updatedURL = req.body.longURL;
-  urlDatabase[shortUrl] = updatedURL;
+  const userId = req.cookies["user_id"];
+  const shortUrl = req.params.shortURL;
+  const updatedURL = req.body.longURL;
+
+  urlDatabase[shortUrl] = {longURL: updatedURL, userID: userId};
+
   res.redirect('/urls');
 
 });
