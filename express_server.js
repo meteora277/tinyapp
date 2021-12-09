@@ -7,8 +7,6 @@ const app = express();
 const PORT = 8080;
 const salt = "IamSalt";
 
-
-
 const urlDatabase = {
   'b2xVn2': {
     longURL: 'http://lighthouselabs.com',
@@ -18,11 +16,11 @@ const urlDatabase = {
     longURL: 'https://www.google.com',
     userID: 'uwuowo'
   },
-  b6UTxQ: {
+  'b6UTxQ': {
     longURL: "https://www.tsn.ca",
     userID: "uwuowo"
   },
-  i3BoGr: {
+  'i3BoGr': {
     longURL: "https://www.google.ca",
     userID: "uwuowo"
 }
@@ -67,6 +65,17 @@ const UserFromEmail = (email) => {
     }
   }
 };
+const filterURLsById = function(userId) {
+  const filteredUrls = {};
+
+  for (let url in urlDatabase) {
+    if (urlDatabase[url].userID === userId) {
+      filteredUrls[url] = urlDatabase[url];
+    }
+  }
+  return filteredUrls;
+};
+console.log(filterURLsById("uwuowo"));
 
 //body parser will parse the buffer recieved when a user POSTs into an object available with req.body
 app.use(bodyParser.urlencoded({extended: true}));
