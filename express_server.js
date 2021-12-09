@@ -1,7 +1,7 @@
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const express = require('express');
-const { createHash } = require('crypto');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const PORT = 8080;
@@ -29,10 +29,16 @@ const users = {
   "uwuowo": {
     id: "uwuowo",
     email:'justin.s.diaz@gmail.com',
-    password: '!"Öõ£$\x00ÕÄ¼\t\n»½H&\x996.Cü\x91\x194[\x07\x00Ï\x17\x84\x1C\x1C'
+    password: '$2a$10$Ll3/tzdT77ZwdJmqGjRqlu0c99Oq73OqVEEoqBunOclpg/XR3cWl.'
   }
 };
-console.log(urlDatabase);
+
+// const isUserLoggedIn = (req, res, next) => {
+
+
+
+// }
+
 const generateRandomString = () => {
   let numberArray = [];
   //function set up so if the available keys change, function will still work
@@ -223,12 +229,12 @@ app.post('/login', (req, res) => {
   let candidateEmail = req.body.email.toLowerCase();
   let candidatePassword = req.body.password;
   let user = UserFromEmail(candidateEmail);
-  let hash = createHash('sha256').update(salt + candidatePassword).digest('binary');
-  
+   
   if (user) {
+
     let password = user.password;
-    let email = user.email;
-    if (email === candidateEmail && password === hash) {
+    const correctPassword = bcrypt.compareSync(candidatePassword, password);
+    if (correctPassword) {
 
       res.cookie('user_id', user.id , {expires: new Date(Date.now() + 900000)});
       res.redirect('/urls');
@@ -266,7 +272,7 @@ app.post('/register', (req, res) => {
     return;
   }
   
-  const hash = createHash('sha256').update(salt + password).digest('binary');
+  const hash = bcrypt.hashSync(password, 10);
   const id = generateRandomString();
 
   let newUser =  {
@@ -276,6 +282,7 @@ app.post('/register', (req, res) => {
   };
   
   users[id] = newUser;
+
   res.cookie('user_id', id, {expires: new Date(Date.now() + 900000)});
   res.redirect('/urls');
 });
