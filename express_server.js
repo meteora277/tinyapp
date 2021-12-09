@@ -33,11 +33,30 @@ const users = {
   }
 };
 
-// const isUserLoggedIn = (req, res, next) => {
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieSession({
+  name: 'session',
+  keys: ['83ea39af-3669-45c2-af71-eba99b07bdf7'],
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 
+const getCurrentUser = (req, res, next) => {
+  const currentUser = users[req.session['user_id']] || undefined;
 
+  if (currentUser) {
+    console.log('uwu');
+  }
+  req.currentUser = currentUser;
+  next();
+};
+// app.use(getCurrentUser);
 
-// }
+app.set('view engine', 'ejs');
+
+//home page redirect to urls page
+app.get('/', (req, res) => {
+  res.redirect('/urls');
+});
 
 const generateRandomString = () => {
   let numberArray = [];
@@ -77,51 +96,46 @@ const urlsForUser = function(userId) {
   }
   return filteredUrls;
 };
-
+ 
 //body parser will parse the buffer recieved when a user POSTs into an object available with req.body
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieSession({
-  name: 'session',
-  keys: ['83ea39af-3669-45c2-af71-eba99b07bdf7'],
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}));
 
-app.set('view engine', 'ejs');
-
-//home page redirect to urls page
-app.get('/', (req, res) => {
-  res.redirect('/urls');
-});
 
 //renders page for creating a new key: value in the db
 //user will be redirected if they are not logged in
 app.get('/urls/new', (req, res) => {
 
   const user = users[req.session.user_id];
+
   if (user) {
     const templateVars = {user: user};
     res.render('urls_new', templateVars);
     return;
   }
+
   res.redirect('/login');
 });
 
+//***
 app.get('/urls/:shortURL', (req, res) => {
 
   let shortURL = req.params.shortURL;
-  const user = users[req.session.user_id];
-
+  const userId = users[req.session.user_id].id;
+  console.log(userId);
+  console.log(urlDatabase);
 
   //if url they are specifying doesn't match an item in db it will throw an error
   if (urlDatabase[shortURL] === undefined) {
     res.status(404).send("this page doesn't exist");
+    return;
   }
-  if (urlDatabase[shortURL].userID !== user) {
+  if (urlDatabase[shortURL].userID !== userId) {
     res.status(401).send("You do not have access to this page");
+    return;
   }
   
-  const templateVars = {shortURL: shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: user};
+  const templateVars = {shortURL: shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: userId};
   res.render('urls_show', templateVars);
+  return;
 });
 
 //renders all the urls into a template
@@ -185,8 +199,7 @@ app.post('/urls', (req, res) => {
       urlDatabase[key].longURL = req.body.longURL;
       urlDatabase[key].userID = req.session.user_id;
     }
-    console.log(urlDatabase);
-    console.log(urlsForUser(req.session.user_id));
+
     res.redirect(`/u/${key}`);
     return;
   }
@@ -210,7 +223,8 @@ app.post('/urls/:shortURL/delete', (req, res) =>{
 });
 
 //will update key in the db based on post wildcard
-app.post('/urls/:shortURL/update', (req, res) => {
+app.post('/urls/:shortURL', (req, res) => {
+
   const userId = req.session.user_id;
   const shortUrl = req.params.shortURL;
   const updatedURL = req.body.longURL;
