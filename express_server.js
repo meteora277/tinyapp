@@ -33,6 +33,7 @@ const users = {
   }
 };
 
+//body parser will parse the buffer recieved when a user POSTs into an object available with req.body
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
@@ -43,20 +44,13 @@ app.use(cookieSession({
 const getCurrentUser = (req, res, next) => {
   const currentUser = users[req.session['user_id']] || undefined;
 
-  if (currentUser) {
-    console.log('uwu');
-  }
   req.currentUser = currentUser;
   next();
 };
-// app.use(getCurrentUser);
+
+app.use(getCurrentUser);
 
 app.set('view engine', 'ejs');
-
-//home page redirect to urls page
-app.get('/', (req, res) => {
-  res.redirect('/urls');
-});
 
 const generateRandomString = () => {
   let numberArray = [];
@@ -97,14 +91,17 @@ const urlsForUser = function(userId) {
   return filteredUrls;
 };
  
-//body parser will parse the buffer recieved when a user POSTs into an object available with req.body
 
+//home page redirect to urls page
+app.get('/', (req, res) => {
+  res.redirect('/urls');
+});
 
 //renders page for creating a new key: value in the db
 //user will be redirected if they are not logged in
 app.get('/urls/new', (req, res) => {
 
-  const user = users[req.session.user_id];
+  const user = req.currentUser;
 
   if (user) {
     const templateVars = {user: user};
@@ -113,27 +110,27 @@ app.get('/urls/new', (req, res) => {
   }
 
   res.redirect('/login');
+  return;
 });
 
 //***
 app.get('/urls/:shortURL', (req, res) => {
 
-  let shortURL = req.params.shortURL;
-  const userId = users[req.session.user_id].id;
-  console.log(userId);
-  console.log(urlDatabase);
-
+  const shortURL = req.params.shortURL;
+  const userId = req.currentUser.id;
   //if url they are specifying doesn't match an item in db it will throw an error
+
   if (urlDatabase[shortURL] === undefined) {
     res.status(404).send("this page doesn't exist");
     return;
   }
+  //if user tries to view a url that they do not have permission to, it will throw an error
   if (urlDatabase[shortURL].userID !== userId) {
     res.status(401).send("You do not have access to this page");
     return;
   }
   
-  const templateVars = {shortURL: shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: userId};
+  const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user: userId};
   res.render('urls_show', templateVars);
   return;
 });
@@ -141,7 +138,7 @@ app.get('/urls/:shortURL', (req, res) => {
 //renders all the urls into a template
 app.get('/urls', (req, res) => {
 
-  const user = users[req.session.user_id] || undefined;
+  const user = users[req.session.user_id];
   let filteredUserUrls = undefined;
 
   if (user) {
