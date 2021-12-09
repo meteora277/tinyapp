@@ -2,6 +2,7 @@ const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const { getUserByEmail } = require('./helpers.js');
 
 const app = express();
 const PORT = 8080;
@@ -66,13 +67,6 @@ const isEmailInDB = (checkEmail) => {
   return false;
 };
 
-const UserFromEmail = (email) => {
-  for (let user in users) {
-    if (users[user].email === email) {
-      return users[user];
-    }
-  }
-};
 const urlsForUser = function(userId) {
   const filteredUrls = {};
 
@@ -233,7 +227,7 @@ app.post('/login', (req, res) => {
   
   let candidateEmail = req.body.email.toLowerCase();
   let candidatePassword = req.body.password;
-  let user = UserFromEmail(candidateEmail);
+  let user = getUserByEmail(candidateEmail, users);
    
   if (user) {
 
