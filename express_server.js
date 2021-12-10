@@ -181,6 +181,11 @@ app.get('/register', (req, res) => {
 //request to login will check if there is a cookie, and redirect you if so
 app.get('/login', (req, res) => {
   const user = users[req.session.user_id] || undefined;
+
+  if (user) {
+    res.redirect('/urls');
+    return;
+  }
   const templateVars = {user: user};
   res.render('urls_login', templateVars);
 
@@ -236,7 +241,7 @@ app.post('/urls/:shortURL', (req, res) => {
   const user = req.currentUser;
   const urlKey = urlDatabase[shortURL];
 
-  //if current user's id and urls own don't match it will not update 
+  //if current user's id and urls own don't match it will not update
   if (user.id === urlKey.userID) {
     urlDatabase[shortURL] = {longURL: updatedURL, userID: user.id};
   }
