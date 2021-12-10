@@ -150,10 +150,6 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-app.get('/urls.json', (req ,res) => {
-  res.json(urlDatabase);
-});
-
 // if shortUrl key is in the database it will redirect, else return to /urls page
 app.get('/u/:shortURL', (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
@@ -190,6 +186,11 @@ app.get('/login', (req, res) => {
   res.render('urls_login', templateVars);
 
 });
+
+// for testing purposes
+// app.get('/urls.json', (req ,res) => {
+//   res.json(urlDatabase);
+// });
 
 //if post request is valid, it will add to database and then redirect to the link passed into database
 //it will also check if link s tart with http:// because redirect doesn't seem to work without it.
