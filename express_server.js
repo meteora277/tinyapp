@@ -54,7 +54,12 @@ app.set('view engine', 'ejs');
 
 //home page redirect to urls page
 app.get('/', (req, res) => {
-  res.redirect('/urls');
+  const user = req.getCurrentUser || undefined;
+  if (user) {
+    res.redirect('/urls');
+    return;
+  }
+  res.redirect('/login');
 });
 
 //renders page for creating a new key: value in the db
