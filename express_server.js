@@ -188,11 +188,10 @@ app.get('/login', (req, res) => {
 
 //if post request is valid, it will add to database and then redirect to the link passed into database
 //it will also check if link s tart with http:// because redirect doesn't seem to work without it.
-//user cannot post to this url if they are not logged in
+//user cannot post to this url if they are not logged in, and will be redirected to /urls
 app.post('/urls', (req, res) => {
 
-
-  const user = users[req.session.user_id];
+  const user = req.currentUser;
   if (user) {
 
     const key = generateRandomString();
@@ -216,21 +215,23 @@ app.post('/urls', (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) =>{
   
   let shortURL = req.params.shortURL;
-  const url = urlDatabase[shortURL];
+  const urlKey = urlDatabase[shortURL];
+  const user = req.currentUser;
 
-  if (req.session.user_id === url.userID) {
+  //if ID of user matches the owner ID of the url it will delete that URL from the DB
+  if (user.id === urlKey.userID) {
  
     delete urlDatabase[shortURL];
   }
   console.log(urlDatabase);
   res.redirect('/urls');
-
   return;
 });
 
 //will update key in the db based on post wildcard
 app.post('/urls/:shortURL', (req, res) => {
 
+  const user = req.currentUser;
   const userId = req.session.user_id;
   const shortUrl = req.params.shortURL;
   const updatedURL = req.body.longURL;
