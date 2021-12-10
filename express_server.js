@@ -2,7 +2,7 @@ const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { getUserByEmail } = require('./helpers.js');
+const { getUserByEmail, generateRandomString, isEmailInDB, getURLsOfUser } = require('./helpers.js');
 
 const app = express();
 const PORT = 8080;
@@ -32,65 +32,24 @@ const users = {
     password: '$2a$10$Ll3/tzdT77ZwdJmqGjRqlu0c99Oq73OqVEEoqBunOclpg/XR3cWl.'
   }
 };
-
-//body parser will parse the buffer recieved when a user POSTs into an object available with req.body
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieSession({
-  name: 'session',
-  keys: ['83ea39af-3669-45c2-af71-eba99b07bdf7'],
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}));
-
+//custom middleware to read user id from cookie, and append the user obj to the request
 const getCurrentUser = (req, res, next) => {
   const currentUser = users[req.session['user_id']] || undefined;
 
   req.currentUser = currentUser;
   next();
 };
-
+//body parser will parse the buffer recieved when a user POSTs into an object available with req.body
+app.use(cookieSession({
+  name: 'session',
+  keys: ['83ea39af-3669-45c2-af71-eba99b07bdf7'],
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(getCurrentUser);
 
 app.set('view engine', 'ejs');
 
-const generateRandomString = () => {
-  let numberArray = [];
-  //function set up so if the available keys change, function will still work
-  let availableChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890';
-
-  //helper function to run 6 times to get a 6 random character string
-  let randomNumFromString = (string) => {
-    let randomIndex = Math.floor(Math.random() * (string.length - 1));
-    return string[randomIndex];
-  };
-
-  let i = 0;
-  while (i < 6) {
-    numberArray.push(randomNumFromString(availableChars));
-    i++;
-  }
-  return numberArray.join('');
-};
-
-const isEmailInDB = (checkEmail) => {
-  for (let user in users) {
-    if (users[user].email === checkEmail) {
-      return true;
-    }
-  }
-  return false;
-};
-
-const urlsForUser = function(userId) {
-  const filteredUrls = {};
-
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === userId) {
-      filteredUrls[url] = urlDatabase[url];
-    }
-  }
-  return filteredUrls;
-};
- 
 
 //home page redirect to urls page
 app.get('/', (req, res) => {
@@ -143,7 +102,7 @@ app.get('/urls', (req, res) => {
   let filteredUserUrls = undefined;
 
   if (user) {
-    filteredUserUrls = urlsForUser(user.id);
+    filteredUserUrls = getURLsOfUser(user.id, urlDatabase);
   }
   
   const templateVars = {urls: filteredUserUrls , user: user};
@@ -202,15 +161,16 @@ app.post('/urls', (req, res) => {
 
     const key = generateRandomString();
     urlDatabase[key] = {};
+    const hasProtocol = req.body.longURL.slice(0,7) === 'http://' || req.body.longURL.slice(0,8) === 'https://';
 
-    if (req.body.longURL.slice(0,7) !== 'http://') {
-      urlDatabase[key].longURL = 'http://' + req.body.longURL;
-      urlDatabase[key].userID = req.session.user_id;
-    } else {
+    if (hasProtocol) {
       urlDatabase[key].longURL = req.body.longURL;
       urlDatabase[key].userID = req.session.user_id;
+    } else {
+      urlDatabase[key].longURL = 'http://' + req.body.longURL;
+      urlDatabase[key].userID = req.session.user_id;
     }
-
+    console.log(urlDatabase);
     res.redirect(`/u/${key}`);
     return;
   }
@@ -296,7 +256,7 @@ app.post('/register', (req, res) => {
   }
 
   //if email is already in db it will fail to register and throw an error
-  if (isEmailInDB(email) === true) {
+  if (isEmailInDB(email, users) === true) {
     res.status(400).send('An account has already been register under this email.');
     return;
   }
