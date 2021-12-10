@@ -32,6 +32,8 @@ const users = {
     password: '$2a$10$Ll3/tzdT77ZwdJmqGjRqlu0c99Oq73OqVEEoqBunOclpg/XR3cWl.'
   }
 };
+
+
 //custom middleware to read user id from cookie, and append the user obj to the request
 const getCurrentUser = (req, res, next) => {
   const currentUser = users[req.session['user_id']] || undefined;
@@ -45,11 +47,10 @@ app.use(cookieSession({
   keys: ['83ea39af-3669-45c2-af71-eba99b07bdf7'],
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(getCurrentUser);
-
 app.set('view engine', 'ejs');
-
 
 //home page redirect to urls page
 app.get('/', (req, res) => {
@@ -68,9 +69,9 @@ app.get('/urls/new', (req, res) => {
     res.render('urls_new', templateVars);
     return;
   }
-
   res.redirect('/login');
   return;
+
 });
 
 //reads url ket from params and gets the associated long url from the database
@@ -143,7 +144,7 @@ app.get('/login', (req, res) => {
   }
   const templateVars = {user: user};
   res.render('urls_login', templateVars);
-
+  return;
 });
 
 // for testing purposes
@@ -175,6 +176,7 @@ app.post('/urls', (req, res) => {
     return;
   }
   res.status(400).send('you must be logged in to send post requests');
+  return;
 });
 
 //will extract url from :shortURL and then delete it from db
@@ -207,7 +209,7 @@ app.post('/urls/:shortURL', (req, res) => {
     urlDatabase[shortURL] = {longURL: updatedURL, userID: user.id};
   }
   res.redirect('/urls');
-
+  return;
 });
 
 //takes email and password out of form data compares it to db
@@ -274,12 +276,14 @@ app.post('/register', (req, res) => {
 
   req.session['user_id'] = id;
   res.redirect('/urls');
+  return;
 });
 
 //clears cookies when user presses logout button
 app.post('/logout', (req, res) =>{
   req.session = null;
   res.redirect('/urls');
+  return;
 });
 
 
