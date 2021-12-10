@@ -83,21 +83,25 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
 
   const shortURL = req.params.shortURL;
-  const userId = req.currentUser.id;
+  const user = req.currentUser;
 
-  //if url they are specifying doesn't match an item in db it will throw an error
-  if (urlDatabase[shortURL] === undefined) {
-    res.status(404).send("this page doesn't exist");
+  if (user) {
+    //if url they are specifying doesn't match an item in db it will throw an error
+    if (urlDatabase[shortURL] === undefined) {
+      res.status(404).send("this page doesn't exist");
+      return;
+    }
+    //if user tries to view a url that they do not have permission to, it will throw an error
+    if (urlDatabase[shortURL].userID !== user.id) {
+      res.status(401).send("You do not have access to this page");
+      return;
+    }
+    
+    const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user: userId};
+    res.render('urls_show', templateVars);
     return;
   }
-  //if user tries to view a url that they do not have permission to, it will throw an error
-  if (urlDatabase[shortURL].userID !== userId) {
-    res.status(401).send("You do not have access to this page");
-    return;
-  }
-  
-  const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user: userId};
-  res.render('urls_show', templateVars);
+  res.status(401).send("You do not have access to this page");
   return;
 });
 
