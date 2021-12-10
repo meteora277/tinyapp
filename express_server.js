@@ -231,13 +231,15 @@ app.post('/urls/:shortURL/delete', (req, res) =>{
 //will update key in the db based on post wildcard
 app.post('/urls/:shortURL', (req, res) => {
 
-  const user = req.currentUser;
-  const userId = req.session.user_id;
-  const shortUrl = req.params.shortURL;
+  const shortURL = req.params.shortURL;
   const updatedURL = req.body.longURL;
+  const user = req.currentUser;
+  const urlKey = urlDatabase[shortURL];
 
-  urlDatabase[shortUrl] = {longURL: updatedURL, userID: userId};
-
+  //if current user's id and urls own don't match it will not update 
+  if (user.id === urlKey.userID) {
+    urlDatabase[shortURL] = {longURL: updatedURL, userID: user.id};
+  }
   res.redirect('/urls');
 
 });
@@ -249,6 +251,12 @@ app.post('/login', (req, res) => {
   let candidateEmail = req.body.email.toLowerCase();
   let candidatePassword = req.body.password;
   let user = getUserByEmail(candidateEmail, users);
+
+  //if either field is empty it will throw an error
+  if (candidatePassword === "" || candidatePassword === "") {
+    res.status(400).send('Fields cannot be left empty');
+    return;
+  }
    
   if (user) {
 
@@ -267,14 +275,6 @@ app.post('/login', (req, res) => {
   return;
 });
 
-
-//clears cookies when user presses logout button
-app.post('/logout', (req, res) =>{
-  req.session = null;
-  res.redirect('/urls');
-});
-
-
 //grabs form info from /register and add a new user to the users db
 //sends user off with a cookie containing login info
 app.post('/register', (req, res) => {
@@ -283,10 +283,13 @@ app.post('/register', (req, res) => {
   const email = req.body.email.toLowerCase();
   const password = req.body.password;
 
+  //if either field is empty it will throw an error
   if (email === "" || password === "") {
     res.status(400).send('Fields cannot be left empty');
     return;
   }
+
+  //if email is already in db it will fail to register and throw an error
   if (isEmailInDB(email) === true) {
     res.status(400).send('An account has already been register under this email.');
     return;
@@ -306,6 +309,13 @@ app.post('/register', (req, res) => {
   req.session['user_id'] = id;
   res.redirect('/urls');
 });
+
+//clears cookies when user presses logout button
+app.post('/logout', (req, res) =>{
+  req.session = null;
+  res.redirect('/urls');
+});
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
