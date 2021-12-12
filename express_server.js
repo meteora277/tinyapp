@@ -97,7 +97,7 @@ app.get('/urls/:shortURL', (req, res) => {
       return;
     }
     
-    const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user: userId};
+    const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user: user};
     res.render('urls_show', templateVars);
     return;
   }
@@ -180,8 +180,8 @@ app.post('/urls', (req, res) => {
       urlDatabase[key].longURL = 'http://' + req.body.longURL;
       urlDatabase[key].userID = req.session.user_id;
     }
-    console.log(urlDatabase);
-    res.redirect(`/u/${key}`);
+    
+    res.redirect(`/urls/${key}`);
     return;
   }
   res.status(400).send('you must be logged in to send post requests');
@@ -200,7 +200,7 @@ app.post('/urls/:shortURL/delete', (req, res) =>{
  
     delete urlDatabase[shortURL];
   }
-  console.log(urlDatabase);
+  
   res.redirect('/urls');
   return;
 });
