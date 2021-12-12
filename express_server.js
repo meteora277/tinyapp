@@ -195,7 +195,7 @@ app.post("/urls", (req, res) => {
 
 //will extract url from :shortURL and then delete it from db
 app.post("/urls/:shortURL/delete", (req, res) => {
-  let shortURL = req.params.shortURL;
+  const shortURL = req.params.shortURL;
   const urlKey = urlDatabase[shortURL];
   const user = req.currentUser;
 
@@ -226,17 +226,17 @@ app.post("/urls/:shortURL", (req, res) => {
 //takes email and password out of form data compares it to db
 //if there is no email in db or the password is incorrect it will retrun a 400 error
 app.post("/login", (req, res) => {
-  let candidateEmail = req.body.email.toLowerCase();
-  let candidatePassword = req.body.password;
-  let user = getUserByEmail(candidateEmail, users);
+  const candidateEmail = req.body.email.toLowerCase();
+  const candidatePassword = req.body.password;
+  const user = getUserByEmail(candidateEmail, users);
 
-  if (candidatePassword === "" || candidateEmail === "") {
+  if (!candidatePassword  || !candidateEmail) {
     res.status(400).send("Fields cannot be left empty");
     return;
   }
 
   if (user) {
-    let password = user.password;
+    const password = user.password;
     const correctPassword = bcrypt.compareSync(candidatePassword, password);
     if (correctPassword) {
       req.session["user_id"] = user.id;
@@ -258,7 +258,7 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
 
   //if either field is empty it will throw an error
-  if (email === "" || password === "") {
+  if (!email || !password) {
     res.status(400).send("Fields cannot be left empty");
     return;
   }
