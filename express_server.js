@@ -264,7 +264,7 @@ app.post("/register", (req, res) => {
   }
 
   //if email is already in db it will fail to register and throw an error
-  if (isEmailInDB(email, users) === true) {
+  if (isEmailInDB(email, users)) {
     res
       .status(400)
       .send("An account has already been register under this email.");
