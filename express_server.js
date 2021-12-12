@@ -230,7 +230,7 @@ app.post('/login', (req, res) => {
   let user = getUserByEmail(candidateEmail, users);
 
   //if either field is empty it will throw an error
-  if (candidatePassword === "" || candidatePassword === "") {
+  if (candidatePassword === "" || candidateEmail === "") {
     res.status(400).send('Fields cannot be left empty');
     return;
   }
